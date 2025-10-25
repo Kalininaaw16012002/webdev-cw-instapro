@@ -1,4 +1,4 @@
-import { getPosts } from "./api.js";
+import { createPost, getPosts } from "./api.js";
 import { renderAddPostPageComponent } from "./components/add-post-page-component.js";
 import { renderAuthPageComponent } from "./components/auth-page-component.js";
 import {
@@ -17,6 +17,7 @@ import {
 } from "./helpers.js";
 
 export let user = getUserFromLocalStorage();
+export let selectedUserId = null;
 export let page = null;
 export let posts = [];
 
@@ -31,21 +32,59 @@ export const logout = () => {
   goToPage(POSTS_PAGE);
 };
 
+const updatePost = ({ type, id }) => {
+  const replacePost = (updatedPost) => {
+    for (let postId in posts) {
+      if (updatedPost.id === posts[postId].id) {
+        posts[postId] = updatedPost;
+        break;
+      }
+    }
+  };
+
+  if (type === "like") {
+    postLike({ token: getToken(), id: id })
+      .then((updatedPost) => {
+        replacePost(updatedPost.post);
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+      .finally(() => {
+        renderApp();
+      });
+  } else if (type === "dislike") {
+    postDislike({ token: getToken(), id: id })
+      .then((updatedPost) => {
+        replacePost(updatedPost.post);
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+      .finally(() => {
+        renderApp();
+      });
+  } else if (type === "delete") {
+    deletePost({ token: getToken(), id: id })
+      .then(() => {
+        posts = posts.filter((post) => post.id !== id);
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+      .finally(() => {
+        renderApp();
+      });
+  }
+};
+
 /**
  * Включает страницу приложения
  */
 export const goToPage = (newPage, data) => {
-  if (
-    [
-      POSTS_PAGE,
-      AUTH_PAGE,
-      ADD_POSTS_PAGE,
-      USER_POSTS_PAGE,
-      LOADING_PAGE,
-    ].includes(newPage)
-  ) {
+  if ([POSTS_PAGE, AUTH_PAGE, ADD_POSTS_PAGE, USER_POSTS_PAGE, LOADING_PAGE].includes(newPage)) {
     if (newPage === ADD_POSTS_PAGE) {
-      /* Если пользователь не авторизован, то отправляем его на страницу авторизации перед добавлением поста */
+      // Если пользователь не авторизован, то отправляем его на авторизацию перед добавлением поста
       page = user ? ADD_POSTS_PAGE : AUTH_PAGE;
       return renderApp();
     }
@@ -67,11 +106,21 @@ export const goToPage = (newPage, data) => {
     }
 
     if (newPage === USER_POSTS_PAGE) {
-      // @@TODO: реализовать получение постов юзера из API
-      console.log("Открываю страницу пользователя: ", data.userId);
-      page = USER_POSTS_PAGE;
-      posts = [];
-      return renderApp();
+      page = LOADING_PAGE;
+      renderApp();
+
+      selectedUserId = data.userId;
+
+      return getUserPosts({ token: getToken(), userID: selectedUserId })
+        .then((newPosts) => {
+          page = USER_POSTS_PAGE;
+          posts = newPosts;
+          renderApp();
+        })
+        .catch((error) => {
+          console.error(error);
+          goToPage(POSTS_PAGE);
+        });
     }
 
     page = newPage;
@@ -101,8 +150,6 @@ const renderApp = () => {
         saveUserToLocalStorage(user);
         goToPage(POSTS_PAGE);
       },
-      user,
-      goToPage,
     });
   }
 
@@ -110,9 +157,14 @@ const renderApp = () => {
     return renderAddPostPageComponent({
       appEl,
       onAddPostClick({ description, imageUrl }) {
-        // @TODO: реализовать добавление поста в API
-        console.log("Добавляю пост...", { description, imageUrl });
-        goToPage(POSTS_PAGE);
+        createPost({ token: getToken(), description, imageUrl })
+          .then(() => {
+            alert("Пост успешно добавлен!");
+            goToPage(POSTS_PAGE);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       },
     });
   }
@@ -120,13 +172,16 @@ const renderApp = () => {
   if (page === POSTS_PAGE) {
     return renderPostsPageComponent({
       appEl,
+      updatePost: updatePost,
     });
   }
 
   if (page === USER_POSTS_PAGE) {
-    // @TODO: реализовать страницу с фотографиями отдельного пользвателя
-    appEl.innerHTML = "Здесь будет страница фотографий пользователя";
-    return;
+    return renderPostsPageComponent({
+      appEl: appEl,
+      userId: selectedUserId,
+      updatePost: updatePost,
+    });
   }
 };
 
