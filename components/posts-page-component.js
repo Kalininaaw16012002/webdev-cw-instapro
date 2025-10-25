@@ -24,17 +24,17 @@ export function renderPostsPageComponent({ appEl,  userId, updatePost }) {
           <img class="post-image" src="${post.imageUrl}" />
         </div>
         <div class="post-likes">
-          <button data-post-id="${post.id}" data-is-liked="${post.isLiked}" class="like-button">
+          <div class="likes-quantity"><button data-post-id="${post.id}" data-is-liked="${post.isLiked}" class="like-button">
             <img src="./assets/images/${post.isLiked ? "like-active.svg" : "like-not-active.svg"}" />
           </button>
-          <p class="post-likes-text">Нравится: <strong>${post.likes.length}</strong></p>
+          <p class="post-likes-text">Нравится: <strong>${post.likes.length}</strong></p></div>
           ${
             user !== null && post.user.id === user._id
               ? `<button class="secondary-button post-delete" data-post-id="${post.id}">Удалить</button>`
               : ``
           }
         </div>
-        <p class="post-text">
+       <p class="post-text">
           <span class="user-name">${userName}</span>
           ${postDescription}
         </p>
@@ -43,7 +43,6 @@ export function renderPostsPageComponent({ appEl,  userId, updatePost }) {
       `;
     })
     .join("");
-
 
    const appHtml = `
   <div class="page-container">

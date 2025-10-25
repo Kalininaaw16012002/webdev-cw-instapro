@@ -1,4 +1,4 @@
-import { createPost, getPosts } from "./api.js";
+import { createPost, deletePost, getPosts, getUserPosts, postDislike, postLike } from "./api.js";
 import { renderAddPostPageComponent } from "./components/add-post-page-component.js";
 import { renderAuthPageComponent } from "./components/auth-page-component.js";
 import {
@@ -109,9 +109,7 @@ export const goToPage = (newPage, data) => {
       page = LOADING_PAGE;
       renderApp();
 
-      selectedUserId = data.userId;
-
-      return getUserPosts({ token: getToken(), userID: selectedUserId })
+      return getUserPosts({ token: getToken(), userID: data.userId })
         .then((newPosts) => {
           page = USER_POSTS_PAGE;
           posts = newPosts;

@@ -111,6 +111,7 @@ export function createPost({ token, description, imageUrl }) {
   });
 }
 
+// Удаляет существующий пост
 export function deletePost({ token, id }) {
   return fetch(`${postsHost}/${id}`, {
     method: "DELETE",
