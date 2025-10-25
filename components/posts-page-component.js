@@ -1,13 +1,18 @@
 import { user, posts, goToPage } from "../index.js";
 import { USER_POSTS_PAGE } from "../routes.js";
 import { renderHeaderComponent } from "./header-component.js";
-import { differenceInMonths, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
+import {
+  differenceInMonths,
+  differenceInDays,
+  differenceInHours,
+  differenceInMinutes,
+} from "date-fns";
 
-
-export function renderPostsPageComponent({ appEl,  userId, updatePost }) {
+export function renderPostsPageComponent({ appEl, userId, updatePost }) {
   console.log("Актуальный список постов:", posts);
 
-  const postsHTML = posts.map((post) => {
+  const postsHTML = posts
+    .map((post) => {
       let userName = post.user.name;
       let postDescription = post.description;
       return `
@@ -24,10 +29,16 @@ export function renderPostsPageComponent({ appEl,  userId, updatePost }) {
           <img class="post-image" src="${post.imageUrl}" />
         </div>
         <div class="post-likes">
-          <div class="likes-quantity"><button data-post-id="${post.id}" data-is-liked="${post.isLiked}" class="like-button">
-            <img src="./assets/images/${post.isLiked ? "like-active.svg" : "like-not-active.svg"}" />
+          <div class="likes-quantity"><button data-post-id="${
+            post.id
+          }" data-is-liked="${post.isLiked}" class="like-button">
+            <img src="./assets/images/${
+              post.isLiked ? "like-active.svg" : "like-not-active.svg"
+            }" />
           </button>
-          <p class="post-likes-text">Нравится: <strong>${post.likes.length}</strong></p></div>
+          <p class="post-likes-text">Нравится: <strong>${
+            post.likes.length
+          }</strong></p></div>
           ${
             user !== null && post.user.id === user._id
               ? `<button class="secondary-button post-delete" data-post-id="${post.id}">Удалить</button>`
@@ -44,7 +55,7 @@ export function renderPostsPageComponent({ appEl,  userId, updatePost }) {
     })
     .join("");
 
-   const appHtml = `
+  const appHtml = `
   <div class="page-container">
     <div class="header-container"></div>
     ${
@@ -61,9 +72,9 @@ export function renderPostsPageComponent({ appEl,  userId, updatePost }) {
   </div>
   `;
 
- appEl.innerHTML = appHtml;
+  appEl.innerHTML = appHtml;
 
-renderHeaderComponent({
+  renderHeaderComponent({
     element: document.querySelector(".header-container"),
   });
 
