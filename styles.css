@@ -196,3 +196,14 @@
   width: 100%;
   text-align: center;
 }
+
+.likes-quantity{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.post-likes{
+  display: flex;
+  justify-content: space-between;
+}
